@@ -26,5 +26,15 @@
   "firstStartTime": "2026-01-29T08:57:35.813Z",
   "sonnet45MigrationComplete": true,
   "opus45MigrationComplete": true,
-  "thinkingMigrationComplete": true
+  "thinkingMigrationComplete": true,
+  "skillUsage": {
+    "ai-integration": {
+      "usageCount": 1,
+      "lastUsedAt": 1769677395053
+    },
+    "supabase-integration": {
+      "usageCount": 1,
+      "lastUsedAt": 1769677410958
+    }
+  }
 }
