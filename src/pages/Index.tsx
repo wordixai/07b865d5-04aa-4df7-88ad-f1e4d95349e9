@@ -4,6 +4,8 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { StyleSelector, STYLES } from "@/components/StyleSelector";
 import { ResultDisplay } from "@/components/ResultDisplay";
 import { Wand2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -17,13 +19,46 @@ const Index = () => {
     setIsProcessing(true);
     setResultImage(null);
 
-    // 模拟AI处理时间
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    // 模拟生成结果（实际项目中这里会调用AI API）
     const style = STYLES.find((s) => s.id === selectedStyle);
-    setResultImage(style?.image || uploadedImage);
-    setIsProcessing(false);
+    if (!style) {
+      toast.error("请选择有效的服装风格");
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      // 调用真实的 AI 换装 API
+      const { data, error } = await supabase.functions.invoke("ai-try-on", {
+        body: {
+          personImage: uploadedImage,
+          style: {
+            id: style.id,
+            name: style.name,
+            description: style.description,
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.resultImage) {
+        setResultImage(data.resultImage);
+        toast.success("AI 换装完成！");
+      } else {
+        throw new Error("未能生成换装效果");
+      }
+    } catch (error) {
+      console.error("AI try-on error:", error);
+      toast.error(error instanceof Error ? error.message : "换装失败，请重试");
+    } finally {
+      setIsProcessing(false);
+    }
   }, [uploadedImage, selectedStyle]);
 
   const handleRegenerate = useCallback(() => {
